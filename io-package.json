@@ -1,0 +1,176 @@
+{
+    "common": {
+        "name": "epson_xp860",
+        "version": "1.0.0",
+        "news": {
+              "1.0.0": {
+                 "en": "stable release",
+                 "de": "stabile Version",
+                 "ru": "стабильный выпуск",
+                 "pt": "versão estável",
+                 "nl": "stabiele vrijlating",
+                 "fr": "version stable",
+                 "it": "rilascio stabile",
+                 "es": "lanzamiento estable",
+                 "pl": "wersja stabilna"
+            }
+        },
+        "title": "Epson XP-860",
+        "titleLang": {
+            "en": "Epson XP-860",
+            "de": "Epson XP-860",
+            "ru": "Epson XP-860",
+            "pt": "Epson XP-860",
+            "nl": "Epson XP-860",
+            "fr": "Epson XP-860",
+            "it": "Epson XP-860",
+            "es": "Epson XP-860"
+        },
+        "desc": {
+            "en": "Epson XP-860 Ink Status",
+            "de": "Epson XP-860 Tintenstatus",
+            "ru": "Epson XP-860 Состояние чернил",
+            "pt": "Status da tinta Epson XP-860",
+            "nl": "Epson XP-860 inktstatus",
+            "fr": "État de l'encre Epson XP-860",
+            "it": "Stato inchiostro Epson XP-860",
+            "es": "Estado de la tinta Epson XP-860",
+            "pl": "Epson XP-860 Status atramentu"
+        },
+        "authors": [
+            "bowao"
+        ],
+        "keywords": [
+            "printer",
+            "ink",
+            "Epson",
+            "Tinte",
+            "Drucker",
+            "office"
+        ],
+        "license": "MIT",
+        "platform": "javascript/Node.js",
+        "main": "main.js",
+        "icon": "epson_xp860.png",
+        "enabled": true,
+        "extIcon": "https://raw.githubusercontent.com/bowao/ioBroker.epson_xp860/master/admin/epson_xp860.png",
+        "readme": "https://github.com/bowao/ioBroker.epson_xp860/blob/master/README.md",
+        "loglevel": "info",
+        "mode": "schedule",
+        "schedule": "0 * * * *",
+        "type": "infrastructure",
+        "materialize": true,
+        "dependencies": [
+            {
+                "js-controller": ">=1.4.2"
+            }
+        ]
+    },
+    "native": {
+        "printerip": "",
+        "printerport": ""
+    },
+    "objects": [],
+    "instanceObjects": [
+        {
+            "_id": "printerInfo",
+            "type": "channel",
+            "common": {
+                "name": "Printer Information"
+            },
+            "native": {}
+        },
+        {
+            "_id": "printerInfo.ip",
+            "type": "state",
+            "common": {
+                "name": "Printer IP",
+                "desc": "Printer IP adress",
+                "type": "string",
+                "read": true,
+                "write": false,
+                "role": "info.ip"
+            },
+            "native": {}
+        },
+        {
+            "_id": "printerInfo.mac",
+            "type": "state",
+            "common": {
+                "name": "Printer MAC",
+                "desc": "Printer MAC adress",
+                "type": "string",
+                "read": true,
+                "write": false,
+                "role": "info.mac"
+            },
+            "native": {}
+        },
+        {
+            "_id": "printerInfo.model",
+            "type": "state",
+            "common": {
+                "name": "Printer Model",
+                "desc": "Printer model type",
+                "type": "string",
+                "read": true,
+                "write": false,
+                "role": "info.model"
+            },
+            "native": {}
+        },
+        {
+            "_id": "printerInfo.name",
+            "type": "state",
+            "common": {
+                "name": "Printer Name",
+                "desc": "Printer Name",
+                "type": "string",
+                "read": true,
+                "write": false,
+                "role": "info.name"
+            },
+            "native": {}
+        },
+        {
+            "_id": "printerInfo.connection",
+            "type": "state",
+            "common": {
+                "name": "Printer connection status",
+                "desc": "Printer connection status",
+                "type": "string",
+                "read": true,
+                "write": false,
+                "role": "text"
+            },
+            "native": {}
+        },
+        {
+            "_id": "printerInfo.requestResponded",
+            "type": "state",
+            "common": {
+                "name": "Printer responded to last request",
+                "desc": "Printer responded to last request",
+                "type": "bool",
+                "read": true,
+                "write": false,
+                "role": "state"
+            },
+            "native": {}
+        },
+        {
+            "_id": "printerInfo.responseTime",
+            "type": "state",
+            "common": {
+                "name": "Response time of last request",
+                "desc": "Response time of last request",
+                "type": "number",
+                "read": true,
+                "write": false,
+                "role": "value",
+                "unit": "ms"
+            },
+            "native": {}
+        }
+    ]
+}
