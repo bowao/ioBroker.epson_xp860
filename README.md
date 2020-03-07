@@ -104,7 +104,7 @@ https://raw.githubusercontent.com/bowao/ioBroker.epson_xp860/master/widgets/ink_
 
 The MIT License (MIT)
 
-Copyright (c) 2019 bowao
+Copyright (c) 2020 bowao <cryolab@web.de>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
