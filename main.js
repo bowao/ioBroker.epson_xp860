@@ -9,55 +9,56 @@
 const utils = require('@iobroker/adapter-core');
 
 // Load your modules here, e.g.:
-const request = require('request');
+const http = require('http');
 
-var lang = 'de';
-var ip = '';
-var baselevel = 50; // bedeutet: in der Webseite wird ein Balken von 100% Höhe 50px hoch gezeichnet. 
+let lang = 'de';
+let ip = '';
+let baseLevel = 50; // bedeutet: in der Webseite wird ein Balken von 100% Höhe 50px hoch gezeichnet. 
                     // Also entspricht ein gezeigtes Tintenlevel von 25 (px) dann 50% und eines von 10 (px) dann 20%
-var link = '';
-var ink = {
+let link = '';
+let runTimeout;
+const ink = {
     'cyan' : {
         'state': 'cyan',
         'name': 'Cyan',
         'cut':  'Ink_C.PNG',
         'cartridge': 'T2422',
-        'slot': '4'    
+        'slot': '4'
     },
     'cyanlight' : {
         'state': 'cyanlight',
         'name': 'Cyan Light',
         'cut':  'Ink_LC.PNG',
         'cartridge': 'T2425',
-        'slot': '2'    
+        'slot': '2'
     },
     'yellow' : {
         'state': 'yellow',
         'name': 'Yellow',
         'cut':  'Ink_Y.PNG',
         'cartridge': 'T2424',
-        'slot': '5'    
+        'slot': '5'
     },
     'black' : {
         'state': 'black',
         'name': 'Black',
         'cut':  'Ink_K.PNG',
         'cartridge': 'T2421',
-        'slot': '1'    
+        'slot': '1'
     },
     'magenta' : {
         'state': 'magenta',
         'name': 'Magenta',
         'cut':  'Ink_M.PNG',
         'cartridge': 'T2423',
-        'slot': '3'    
+        'slot': '3'
     },
     'magentalight' : {
         'state': 'magentalight',
         'name': 'Magenta Light',
         'cut':  'Ink_LM.PNG',
         'cartridge': 'T2426',
-        'slot': '6'    
+        'slot': '6'
     }
 };
 
@@ -90,6 +91,7 @@ class epson_xp860 extends utils.Adapter {
      */
     onUnload(callback) {
         try {
+            clearTimeout(runTimeout);
             this.log.info('cleaned everything up...');
             callback();
         } catch (e) {
@@ -100,8 +102,8 @@ class epson_xp860 extends utils.Adapter {
     readSettings() {
         //check if IP is entered in settings
         if (!this.config.printerip) {
-            this.log.warn('No IP adress of printer set up. Adapter will be stopped.');
-            //stopReadPrinter();
+            this.log.warn('Please set up the Printer IP address in the Adapter-Config. Adapter will be stopped.');
+            return false;
         } 
         else {
             ip = (this.config.printerport.length > 0) ? this.config.printerip + ':' + this.config.printerport : this.config.printerip; // if port is set then ip+port else ip only
@@ -111,114 +113,118 @@ class epson_xp860 extends utils.Adapter {
                 val: ip,
                 ack: false
             });
+            return true;
         }
     }
 
     readPrinter() {
 
-        var name_cut = 'Druckername',
-            name_cut2 = 'Verbindungsstatus',
-            connect_cut = 'Verbindungsstatus',
-            connect_cut2 = 'IP-Adresse beziehen',
-            model_cut = '<title>',
-            model_cut2 = '</title>',
-            mac_cut = 'MAC-Adresse',
-            mac_cut2 = 'info-wfd',
-            requestResponded,
-            responseTime
-     
-        request(
-            {
-                url: link,
-                time: true,
-                timeout: 4500
-            },
-            (error, response, body) => {
-                if (!error && response.statusCode == 200) {
-                    requestResponded = true;
-                    this.setState('printerInfo.ip', {
-                        val: ip,
-                        ack: true
+        const nameCutStart = 'Druckername',
+              nameCutEnd = 'Verbindungsstatus',
+              modelCutStart = '<title>',
+              modelCutEnd = '</title>',
+              macCutStart = 'MAC-Adresse',
+              macCutEnd = 'info-wfd',
+              connectCutStart = 'Verbindungsstatus',
+              connectCutEnd = 'IP-Adresse beziehen';
+        let requestResponded,
+            responseTime;
+
+        http.get(link, (response) => {
+            let body = '';
+
+            // called when a data chunk is received.
+            response.on('data', (chunk) => {
+            body += chunk;
+            });
+
+            // called when the complete response is received.
+            response.on('end', () => {
+                requestResponded = true;
+                this.setState('printerInfo.ip', {
+                    val: ip,
+                    ack: true
+                });
+                // NAME EINLESEN
+                let nameCutStartPosition = body.indexOf(nameCutStart) + nameCutStart.length + 41,
+                nameCutEndPosition = body.indexOf(nameCutEnd) -64;
+                let nameString = body.substring(nameCutStartPosition, nameCutEndPosition);
+                this.setState('printerInfo.name', {val: nameString, ack: true});
+                this.log.debug('Printer-Name: ' + nameString);
+
+                // MODELL EINLESEN
+                let modelCutStartPosition = body.indexOf(modelCutStart) + modelCutStart.length,
+                modelCutEndPosition = body.indexOf(modelCutEnd);
+                let modelString = body.substring(modelCutStartPosition, modelCutEndPosition);
+                this.setState('printerInfo.model', {val: modelString, ack: true});
+                this.log.debug('Printer-Model: ' + modelString);
+
+                // MAC ADRESSE EINLESEN
+                let macCutStartPosition = body.indexOf(macCutStart) + macCutStart.length + 41,
+                macCutEndPosition = body.indexOf(macCutEnd) - 39;
+                let macString = body.substring(macCutStartPosition, macCutEndPosition);
+                this.setState('printerInfo.mac', {val: macString, ack: true});
+                this.log.debug('Printer-MAC: ' + macString);
+
+                // CONNECTION EINLESEN
+                let connectCutStartPosition = body.indexOf(connectCutStart) + connectCutStart.length + 41,
+                connectCutEndPosition = body.indexOf(connectCutEnd) - 64;
+                let connectString = body.substring(connectCutStartPosition, connectCutEndPosition);
+                this.setState('printerInfo.connection', {val: connectString, ack: true});
+                this.log.debug('Printer-Connection: ' + connectString);
+
+                for (let i in ink) {
+                    this.setObjectNotExists('ink_' + ink[i].state, {
+                        type: 'state',
+                        common: {
+                            name: 'Level of Cartridge ' + ink[i].cartridge + ' ' + ink[i].name,
+                            desc: 'Level of Cartridge ' + ink[i].cartridge + ' ' + ink[i].name,
+                            type: 'number',
+                            unit: '%',
+                            min: 0,
+                            max: 100,
+                            read: true,
+                            write: false,
+                            role: 'value.level'
+                        },
+                        native: {}
                     });
-                     // NAME EINLESEN
-                    var name_cut_position = body.indexOf(name_cut) + name_cut.length + 41,
-                    name_cut2_position = body.indexOf(name_cut2) -64;
-                    var name_string = body.substring(name_cut_position, name_cut2_position);
-                    this.setState('printerInfo.name', {val: name_string, ack: true});  
-                
-                     // MODELL EINLESEN
-                    var model_cut_position = body.indexOf(model_cut) + model_cut.length,
-                    model_cut2_position = body.indexOf(model_cut2);
-                    var model_string = body.substring(model_cut_position, model_cut2_position);
-                    this.setState('printerInfo.model', {val: model_string, ack: true});  
-                
-                     // MAC ADRESSE EINLESEN
-                    var mac_cut_position = body.indexOf(mac_cut) + mac_cut.length + 41,
-                    mac_cut2_position = body.indexOf(mac_cut2) - 39;
-                    var mac_string = body.substring(mac_cut_position, mac_cut2_position);
-                    this.setState('printerInfo.mac', {val: mac_string, ack: true});     
-            
-                     // CONNECTION EINLESEN
-                    var connect_cut_position = body.indexOf(connect_cut) + connect_cut.length + 41,
-                    connect_cut2_position = body.indexOf(connect_cut2) - 64;
-                    var connect_string = body.substring(connect_cut_position, connect_cut2_position);
-                    this.setState('printerInfo.connection', {val: connect_string, ack: true});   
 
-                    for (var i in ink) {
-                       this.setObjectNotExists('ink_' + ink[i].state, {
-                            type: 'state',
-                            common: {
-                                name: 'Level of Cartridge ' + ink[i].cartridge + ' ' + ink[i].name,
-                                desc: 'Level of Cartridge ' + ink[i].cartridge + ' ' + ink[i].name,
-                                type: 'number',
-                                unit: '%',
-                                min: 0,
-                                max: 100,
-                                read: true,
-                                write: false,
-                                role: 'value.level'
-                            },
-                            native: {}
-                        });
-
-                         // READ LEVELS
-                        var cut_position = body.indexOf(ink[i].cut) + ink[i].cut.length + 10;
-                        var level_string = body.substring(cut_position, cut_position + 12);
-                        var level = parseInt(level_string,10) * 100 / parseInt(baselevel,10);
-                        this.setState('ink_' + ink[i].state, {val: level, ack: true});
-                        this.log.debug(ink[i].name + ' Level: ' + level + '%');
-                    }
-                
-                    this.log.debug('Channels and states created/write');
-                    responseTime = parseInt(response.timingPhases.total);
-                
-                } else {
-                    this.log.warn('Cannot connect to Printer: ' + error);
-                    requestResponded = false;
-                    responseTime = -1;
+                    // READ LEVELS
+                    let levelCutPosition = body.indexOf(ink[i].cut) + ink[i].cut.length + 10;
+                    let levelString = body.substring(levelCutPosition, levelCutPosition + 12);
+                    let level = parseInt(levelString,10) * 100 / parseInt(baseLevel,10);
+                    this.setState('ink_' + ink[i].state, {val: level, ack: true});
+                    this.log.debug(ink[i].name + ' Level: ' + level + '%');
                 }
+
+                this.log.debug('Channels and states created/writen');
 
                 // Write connection status
                 this.setState('printerInfo.requestResponded', {
                     val: requestResponded,
                     ack: true
                 });
-                this.setState('printerInfo.responseTime', {
-                    val: responseTime,
-                    ack: true
-                });
-            }
-        ); // End request 
-            this.log.debug('finished reading printer Data');
+                // End request
+                this.log.info('Printer data received successfully');
+            });
+        }).on("error", (error) => {
+            this.setState('printerInfo.requestResponded', {
+                val: false,
+                ack: true
+            });
+            this.log.error("Error: " + error.message);
+        });
     }
 
     main() {
         const that = this;
-        this.readSettings();
-        this.log.debug('Epson XP860 adapter started...');
-        this.readPrinter();
+        if(this.readSettings()) {
+            this.log.debug('Epson XP860 adapter started...');
+            this.readPrinter();
+        }
 
-        setTimeout(function() {
+        runTimeout = setTimeout(function() {
             that.log.info('Epson XP-860 adapter stopped');
             that.stop();
 

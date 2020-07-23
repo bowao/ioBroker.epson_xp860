@@ -1,5 +1,12 @@
 ![Logo](admin/epson_xp860.png)
 # ioBroker.epson_xp860
+
+[![Dependency Status](https://img.shields.io/david/bowao/iobroker.epson_xp860.svg)](https://david-dm.org/bowao/iobroker.epson_xp860)
+[![Known Vulnerabilities](https://snyk.io/test/github/bowao/ioBroker.epson_xp860/badge.svg)](https://snyk.io/test/github/bowao/ioBroker.epson_xp860)
+
+**Tests:**: [![Travis-CI](http://img.shields.io/travis/bowao/ioBroker.epson_xp860/master.svg)](https://travis-ci.org/bowao/ioBroker.epson_xp860)
+
+# IoBroker Adapter for Epson Expression Photo XP860
 (German version see below)
 
 ## Description
@@ -39,7 +46,6 @@ printerInfo.mac
 printerInfo.model  
 printerInfo.name  
 printerInfo.requestResponded (True if printer responded on last request)  
-printerInfo.responseTime (Response time of last request)
 
 ## VIS
 ### Widget
@@ -84,7 +90,6 @@ printerInfo.mac
 printerInfo.model  
 printerInfo.name  
 printerInfo.requestResponded (Wahr, wenn der Drucker auf die letzte Anfrage geantwortet hat)  
-printerInfo.responseTime (Antwortzeit der letzten Anfrage)
 
 
 ## VIS
@@ -96,9 +101,17 @@ https://raw.githubusercontent.com/bowao/ioBroker.epson_xp860/master/widgets/ink_
 
 
 ## Changelog
+### 2.0.0
+- Update dependencies
+- Replace deprecated npm packet request with standard library module http
+- Fixed wrong links to data points printer model, name and mac in widget
+- Fixed invalid obj.common.type in datapoint requestResponded
+- BREAKING CHANGE: Drop node 8 support
+- BREAKING CHANGE: js-controller v2.4.0 or above required
+- BREAKING CHANGE: Remove datapoint responseTime
 
 ### 1.0.0
-* stable release
+- stable release
 
 ## License
 
