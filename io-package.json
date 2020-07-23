@@ -1,8 +1,11 @@
 {
     "common": {
         "name": "epson_xp860",
-        "version": "1.0.0",
+        "version": "2.0.0",
         "news": {
+              "2.0.0": {
+                 "en": "Update dependencies, Drop node 8 support, Bugfix"
+            },
               "1.0.0": {
                  "en": "stable release",
                  "de": "stabile Version",
@@ -59,10 +62,11 @@
         "mode": "schedule",
         "schedule": "0 * * * *",
         "type": "infrastructure",
+        "compact": true,
         "materialize": true,
         "dependencies": [
             {
-                "js-controller": ">=1.4.2"
+                "js-controller": ">=2.4.0"
             }
         ]
     },
@@ -151,24 +155,10 @@
             "common": {
                 "name": "Printer responded to last request",
                 "desc": "Printer responded to last request",
-                "type": "bool",
+                "type": "boolean",
                 "read": true,
                 "write": false,
                 "role": "state"
-            },
-            "native": {}
-        },
-        {
-            "_id": "printerInfo.responseTime",
-            "type": "state",
-            "common": {
-                "name": "Response time of last request",
-                "desc": "Response time of last request",
-                "type": "number",
-                "read": true,
-                "write": false,
-                "role": "value",
-                "unit": "ms"
             },
             "native": {}
         }
