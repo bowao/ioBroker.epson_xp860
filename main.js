@@ -222,8 +222,6 @@ class epson_xp860 extends utils.Adapter {
         if(this.readSettings()) {
             this.log.debug('Epson XP860 adapter started...');
             this.readPrinter();
-        } else {
-            this.stop();
         }
 
         runTimeout = setTimeout(function() {
